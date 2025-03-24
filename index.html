@@ -1,19 +1,109 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lecteur de Playlist</title>
-</head>
-<body>
-    <h1>Lecteur de Playlist</h1>
-    <div>
-        <button id="prev">⏮ Précédent</button>
-        <button id="play">▶️ Play / Pause</button>
-        <button id="next">⏭ Suivant</button>
+    <link rel="stylesheet" href="src/style.css" />
+  </head>
+  <body
+    class="bg-amber-50 font-[ClashDisplay-Variable] font-semibold uppercase text-stone-900 h-screen overflow-hidden"
+  >
+    <div class="flex">
+      <!-- Cover display -->
+      <div class="flex flex-col h-full">
+        <img
+          id="previous-track-cover"
+          class="h-48"
+          src=""
+          alt=""
+        />
+        <img
+          id="current-track-cover"
+          class="h-48"
+          src=""
+          alt=""
+        />
+        <img
+          id="next-track-cover"
+          class="h-48"
+          src=""
+          alt=""
+        />
+      </div>
+
+      <!-- Player -->
+      <div class="flex flex-col">
+        <div class="flex flex-col">
+          <h4 id="track-album" class="text-xl font-medium">Titre de l'album</h4>
+          <h3 id="track-title" class="text-5xl font-bold">Titre du morceau</h3>
+          <div class="flex gap-2">
+            <h4 id="track-artist" class="text-xl font-semibold">
+              Nom de l'artiste
+            </h4>
+            <h5 id="track-feat" class="text-xl font-medium">
+              Nom des artistes en featuring
+            </h5>
+          </div>
+        </div>
+
+        <div class="flex gap-16">
+          <button id="prev" class="cursor-pointer">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              class="h-8 w-8"
+            >
+              <path
+                d="M220-240v-480h80v480h-80Zm520 0L380-480l360-240v480Zm-80-240Zm0 90v-180l-136 90 136 90Z"
+              />
+            </svg>
+          </button>
+          <button id="play" class="cursor-pointer">
+            <!-- Play SVG -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              id="playSVG"
+              class="h-8 w-8"
+            >
+              <path
+                d="M320-200v-560l440 280-440 280Zm80-280Zm0 134 210-134-210-134v268Z"
+              />
+            </svg>
+            <!-- Pause SVG -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              id="pauseSVG"
+              class="h-8 w-8"
+            >
+              <path
+                d="M520-200v-560h240v560H520Zm-320 0v-560h240v560H200Zm400-80h80v-400h-80v400Zm-320 0h80v-400h-80v400Zm0-400v400-400Zm320 0v400-400Z"
+              />
+            </svg>
+          </button>
+          <button id="next" class="cursor-pointer">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              class="h-8 w-8"
+            >
+              <path
+                d="M660-240v-480h80v480h-80Zm-440 0v-480l360 240-360 240Zm80-240Zm0 90 136-90-136-90v180Z"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <ul id="playlist"></ul>
     </div>
-    <h2 id="track-title">Titre du morceau</h2>
-    <ul id="playlist"></ul>
-    <script src="main.js"></script>
-</body>
+
+    <script src="/src/main.js"></script>
+  </body>
 </html>
