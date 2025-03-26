@@ -29,7 +29,18 @@ class MusicPlayer {
         cover: "/covers/la_fiev.webp",
         url: "/musics/mairo-blccd_tears.mp3",
       },
+      {
+        id: 4,
+        title: "Bleu marine",
+        artist: "Jewel Usain",
+        featuredArtists: [],
+        album: "Où les garçons grandissent",
+        cover: "/covers/ou_les_garcons_grandissent.webp",
+        url: "/musics/jewel_usain-bleu_marine.mp3",
+      },
     ];
+    this.gap = 40;
+    this.coversToUpdate = []
     this.currentTrackIndex = 0;
     this.audio = new Audio();
     this.isPlaying = false;
@@ -44,7 +55,10 @@ class MusicPlayer {
     this.cacheDOM();
     this.bindEvents();
     // this.setupDraggable();
+    this.setCovers()
     this.loadTrack();
+    this.refreshDOM();
+    this.initWheelEventListener();
   };
 
   cacheDOM = () => {
@@ -62,10 +76,25 @@ class MusicPlayer {
     this.trackArtist = document.querySelector("#track-artist");
     this.trackFeat = document.querySelector("#track-feat");
 
-    this.currentTrackCover = document.querySelector("#current-track-cover");
-    this.previousTrackCover = document.querySelector("#previous-track-cover");
-    this.nextTrackCover = document.querySelector("#next-track-cover");
+    this.trackCoverContainer = document.querySelector("#track-covers-container");
+    this.trackCover = document.querySelector("#track-cover");
   };
+
+  bindEvents = (item) => {
+    this.playButton.addEventListener("click", () => this.togglePlay());
+    this.nextButton.addEventListener("click", () => this.nextTrack());
+    this.prevButton.addEventListener("click", () => this.prevTrack());
+    this.audio.addEventListener("ended", () => this.nextTrack());
+  };
+
+  setCovers = () => {
+    this.tracks.forEach(track => {
+      const clone = this.trackCover.cloneNode(true)
+      clone.src = track.cover
+      this.coversToUpdate.push(clone)
+      this.trackCoverContainer.appendChild(clone)
+    });
+  }
 
   refreshDOM = () => {
     this.trackTitle.textContent = this.tracks[this.currentTrackIndex].title;
@@ -90,36 +119,37 @@ class MusicPlayer {
       this.trackFeat.textContent = "";
     }
     this.togglePlayButton();
-    this.refreshCovers()
-
+    // this.refreshCovers();
   };
 
   togglePlayButton = () => {
-    console.log("toggleplayvutton", this.isPlaying);
     if (this.isPlaying) {
+      console.log("set pause button");
       this.playSVG.style.display = "none";
       this.pauseSVG.style.display = "block";
     } else {
+      console.log("set play button");
+
       this.playSVG.style.display = "block";
       this.pauseSVG.style.display = "none";
     }
   };
 
-  refreshCovers = () => {
-    this.nextTrackCover.src = this.tracks[(this.currentTrackIndex + 1) % this.tracks.length].cover;
-    this.currentTrackCover.src = this.tracks[this.currentTrackIndex].cover;
-    this.previousTrackCover.src = this.tracks[(this.currentTrackIndex - 1 + this.tracks.length) % this.tracks.length].cover;
-
-  }
-
-  bindEvents = (item) => {
-    this.playButton.addEventListener("click", () => this.togglePlay());
-    this.nextButton.addEventListener("click", () => this.nextTrack()); // Bug: nextButton est undefined
-    this.prevButton.addEventListener("wheel", function () {
-      this.prevTrack();
-    });
-    this.audio.addEventListener("ended", () => this.nextTrack());
-  };
+  // refreshCovers = () => {
+  //   this.nTrackCover.src = this.tracks[this.currentTrackIndex].cover;
+  //   this.np1TrackCover.src =
+  //     this.tracks[(this.currentTrackIndex + 1) % this.tracks.length].cover;
+  //   this.np2TrackCover.src =
+  //     this.tracks[(this.currentTrackIndex + 2) % this.tracks.length].cover;
+  //   this.nm1TrackCover.src =
+  //     this.tracks[
+  //       (this.currentTrackIndex - 1 + this.tracks.length) % this.tracks.length
+  //     ].cover;
+  //   this.nm2TrackCover.src =
+  //     this.tracks[
+  //       (this.currentTrackIndex - 2 + this.tracks.length) % this.tracks.length
+  //     ].cover;
+  // };
 
   loadTrack = () => {
     if (
@@ -130,7 +160,6 @@ class MusicPlayer {
       return;
     }
     this.audio.src = this.tracks[this.currentTrackIndex].url;
-    this.refreshDOM();
   };
 
   togglePlay = () => {
@@ -157,6 +186,7 @@ class MusicPlayer {
     this.loadTrack();
     this.audio.play();
     this.isPlaying = true;
+    this.refreshDOM();
   };
 
   prevTrack = () => {
@@ -165,6 +195,29 @@ class MusicPlayer {
     this.loadTrack();
     this.audio.play();
     this.isPlaying = true;
+    this.refreshDOM();
+  };
+
+  initWheelEventListener = () => {
+    this.coverSize = this.trackCover.getBoundingClientRect().width;
+    this.containerSize = this.coverSize * this.tracks.length + this.gap * (this.tracks.length)
+    this.initialValue = this.coverSize + this.gap
+    this.scrollY = 0;
+    this.setCoversPosition();
+    window.addEventListener("wheel", (e) => {
+      this.scrollY += e.wheelDeltaY;
+      this.setCoversPosition();
+    });
+  };
+
+  setCoversPosition = () => {
+    this.trackCover.remove()
+    this.coversToUpdate.forEach((cover, index) => {
+      cover.style.top = `${
+        -this.initialValue + (index * (this.coverSize + this.gap) + this.scrollY + this.containerSize) % (this.containerSize) 
+        // (-this.initialValue + (index * (this.coverSize + this.gap))) + (this.scrollY + this.containerSize) % (this.containerSize) 
+      }px`;
+    });
   };
 }
 
