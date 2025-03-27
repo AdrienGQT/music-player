@@ -1,3 +1,5 @@
+import { gsap } from 'gsap'
+
 class MusicPlayer {
   // Explication : Le constructeur est la première fonction lancée quand la Classe est instanciée. On y initialise les propriété, et appelle des fonctions.
   constructor() {
@@ -192,7 +194,8 @@ class MusicPlayer {
 
     this.setCoversPosition();
     window.addEventListener("wheel", (e) => {
-      this.scrollY -= e.wheelDeltaY;
+      this.scrollY -= e.wheelDeltaY * 0.3;
+      this.scrollY = Math.round(this.scrollY);
       this.setCoversPosition();
     });
   };
@@ -208,7 +211,14 @@ class MusicPlayer {
       if (adjustedPosition < -this.initialValue) {
         adjustedPosition += this.containerSize;
       }
-      cover.style.top = `${adjustedPosition}px`;
+      gsap.to(cover, {
+        top : adjustedPosition,
+        duration : 0,
+        onComplete : function(){
+          
+        }
+      })
+      // cover.style.top = `${adjustedPosition}px`;
     });
   };
 }
