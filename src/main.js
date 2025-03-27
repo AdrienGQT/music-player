@@ -40,7 +40,7 @@ class MusicPlayer {
       },
     ];
     this.gap = 40;
-    this.coversToUpdate = []
+    this.coversToUpdate = [];
     this.currentTrackIndex = 0;
     this.audio = new Audio();
     this.isPlaying = false;
@@ -55,7 +55,7 @@ class MusicPlayer {
     this.cacheDOM();
     this.bindEvents();
     // this.setupDraggable();
-    this.setCovers()
+    this.setCovers();
     this.loadTrack();
     this.refreshDOM();
     this.initWheelEventListener();
@@ -76,7 +76,9 @@ class MusicPlayer {
     this.trackArtist = document.querySelector("#track-artist");
     this.trackFeat = document.querySelector("#track-feat");
 
-    this.trackCoverContainer = document.querySelector("#track-covers-container");
+    this.trackCoverContainer = document.querySelector(
+      "#track-covers-container"
+    );
     this.trackCover = document.querySelector("#track-cover");
   };
 
@@ -88,13 +90,13 @@ class MusicPlayer {
   };
 
   setCovers = () => {
-    this.tracks.forEach(track => {
-      const clone = this.trackCover.cloneNode(true)
-      clone.src = track.cover
-      this.coversToUpdate.push(clone)
-      this.trackCoverContainer.appendChild(clone)
+    this.tracks.forEach((track) => {
+      const clone = this.trackCover.cloneNode(true);
+      clone.src = track.cover;
+      this.coversToUpdate.push(clone);
+      this.trackCoverContainer.appendChild(clone);
     });
-  }
+  };
 
   refreshDOM = () => {
     this.trackTitle.textContent = this.tracks[this.currentTrackIndex].title;
@@ -134,22 +136,6 @@ class MusicPlayer {
       this.pauseSVG.style.display = "none";
     }
   };
-
-  // refreshCovers = () => {
-  //   this.nTrackCover.src = this.tracks[this.currentTrackIndex].cover;
-  //   this.np1TrackCover.src =
-  //     this.tracks[(this.currentTrackIndex + 1) % this.tracks.length].cover;
-  //   this.np2TrackCover.src =
-  //     this.tracks[(this.currentTrackIndex + 2) % this.tracks.length].cover;
-  //   this.nm1TrackCover.src =
-  //     this.tracks[
-  //       (this.currentTrackIndex - 1 + this.tracks.length) % this.tracks.length
-  //     ].cover;
-  //   this.nm2TrackCover.src =
-  //     this.tracks[
-  //       (this.currentTrackIndex - 2 + this.tracks.length) % this.tracks.length
-  //     ].cover;
-  // };
 
   loadTrack = () => {
     if (
@@ -200,23 +186,29 @@ class MusicPlayer {
 
   initWheelEventListener = () => {
     this.coverSize = this.trackCover.getBoundingClientRect().width;
-    this.containerSize = this.coverSize * this.tracks.length + this.gap * (this.tracks.length)
-    this.initialValue = this.coverSize + this.gap
+    this.containerSize = (this.coverSize + this.gap) * this.tracks.length;
+    this.initialValue = this.coverSize + this.gap;
     this.scrollY = 0;
+
     this.setCoversPosition();
     window.addEventListener("wheel", (e) => {
-      this.scrollY += e.wheelDeltaY;
+      this.scrollY -= e.wheelDeltaY;
       this.setCoversPosition();
     });
   };
 
   setCoversPosition = () => {
-    this.trackCover.remove()
+    if (this.trackCover.parentNode) {
+      this.trackCover.remove();
+    }
     this.coversToUpdate.forEach((cover, index) => {
-      cover.style.top = `${
-        -this.initialValue + (index * (this.coverSize + this.gap) + this.scrollY + this.containerSize) % (this.containerSize) 
-        // (-this.initialValue + (index * (this.coverSize + this.gap))) + (this.scrollY + this.containerSize) % (this.containerSize) 
-      }px`;
+      let basePosition =
+       index * (this.coverSize + this.gap);
+      let adjustedPosition =  -this.initialValue + (basePosition - this.scrollY) % this.containerSize;
+      if (adjustedPosition < -this.initialValue) {
+        adjustedPosition += this.containerSize;
+      }
+      cover.style.top = `${adjustedPosition}px`;
     });
   };
 }
