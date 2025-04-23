@@ -1,7 +1,9 @@
-import { gsap } from 'gsap'
+import { gsap } from "gsap";
+import { Draggable } from "gsap/Draggable";
+
+gsap.registerPlugin(Draggable);
 
 class MusicPlayer {
-  // Explication : Le constructeur est la première fonction lancée quand la Classe est instanciée. On y initialise les propriété, et appelle des fonctions.
   constructor() {
     this.tracks = [
       {
@@ -41,9 +43,12 @@ class MusicPlayer {
         url: "/musics/jewel_usain-bleu_marine.mp3",
       },
     ];
+
+    this.currentTrackIndex = 1;
+    this.currentSliderIndex = 0;
+
     this.gap = 40;
     this.coversToUpdate = [];
-    this.currentTrackIndex = 0;
     this.audio = new Audio();
     this.isPlaying = false;
     this.volume = 1;
@@ -51,16 +56,15 @@ class MusicPlayer {
     this.init();
   }
 
-  // Explication : Ici, on est en dehors du constructor, on y défini toutes les fonctions que la classe possède.
-
   init = () => {
     this.cacheDOM();
     this.bindEvents();
-    // this.setupDraggable();
+    this.setupDraggable();
     this.setCovers();
     this.loadTrack();
     this.refreshDOM();
     this.initWheelEventListener();
+    this.animate();
   };
 
   cacheDOM = () => {
@@ -123,7 +127,6 @@ class MusicPlayer {
       this.trackFeat.textContent = "";
     }
     this.togglePlayButton();
-    // this.refreshCovers();
   };
 
   togglePlayButton = () => {
@@ -166,60 +169,178 @@ class MusicPlayer {
     this.togglePlayButton();
   };
 
-  // Challenge : les fonction Next et previous track ont sensiblement le même traitement. En code, on cherche toujours à ne pas dupliquer de la logique, mais plutôt à factoriser.
-  // Peux tu créer une seule fonction à la place de deux ? Comment gérerais tu le cas à ce moment ?
-
   nextTrack = () => {
+
+    // Update playlist index
     this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length;
-    this.loadTrack();
-    this.audio.play();
-    this.isPlaying = true;
-    this.refreshDOM();
+    this.currentSliderIndex +=1
+
+    this.snapSlider()
+
+    this.playTrack();
   };
 
   prevTrack = () => {
+
+    // Update playlist index
     this.currentTrackIndex =
       (this.currentTrackIndex - 1 + this.tracks.length) % this.tracks.length;
+    this.currentSliderIndex -=1
+
+    this.snapSlider()
+
+    this.playTrack();
+  };
+
+  playTrack = () => {
     this.loadTrack();
     this.audio.play();
     this.isPlaying = true;
     this.refreshDOM();
   };
+
+  // Infinite slider
+  setupDraggable = () => {
+    const proxy = document.createElement("div");
+
+    let lastY = 0;
+
+    const handleDragRef = this.handleDrag;
+    const handleDragEndRef = this.handleDragEnd;
+
+    let dragDelta = 0;
+    let currentY = 0;
+    let previousY = 0;
+
+    Draggable.create(proxy, {
+      type: "y",
+      inertia: true,
+      trigger: this.trackCoverContainer,
+      onDrag: function () {
+        currentY = this.y;
+        dragDelta = currentY - previousY;
+        handleDragRef(dragDelta);
+        previousY = currentY;
+      },
+      onDragEnd: function (endValue) {
+        let delta = this.endY - this.startY;
+        handleDragEndRef(delta)
+      },
+    });
+  };
+
+  handleDrag = (value) => {
+    this.targetScrollY -= value;
+    this.targetScrollY = Math.round(this.targetScrollY);
+    this.setCoversPosition();
+  };
+
+  handleDragEnd = (delta) => {
+    if(delta < 0){
+      this.nextTrack()
+    }else{
+      this.prevTrack()
+    }
+  }
 
   initWheelEventListener = () => {
     this.coverSize = this.trackCover.getBoundingClientRect().width;
     this.containerSize = (this.coverSize + this.gap) * this.tracks.length;
     this.initialValue = this.coverSize + this.gap;
+
     this.scrollY = 0;
+    this.targetScrollY = 0;
+
+    this.wheelTimeout = null;
+    this.isWheeling = false;
+    this.wheelEndDelay = 250;
 
     this.setCoversPosition();
+
     window.addEventListener("wheel", (e) => {
-      this.scrollY -= e.wheelDeltaY * 0.3;
-      this.scrollY = Math.round(this.scrollY);
-      this.setCoversPosition();
+      this.deltaY = e.deltaY
+      this.wheelDeltaY = e.wheelDeltaY
+      console.log(this.deltaY)
+      this.targetScrollY -= this.wheelDeltaY * 0.3;
+      this.targetScrollY = Math.round(this.targetScrollY);
+
+      this.isWheeling = true;
+
+      if (this.wheelTimeout) {
+        clearTimeout(this.wheelTimeout);
+      }  
+
+      // Detect if wheeling has ended
+      if ((this.deltaY > 0 && this.deltaY < 5) || (this.deltaY < 0 && this.deltaY > -5)) {
+        console.log('wheel ended')
+        this.wheelTimeout = setTimeout(() => {
+          if (this.isWheeling) {
+            this.handleWheelEnd(this.deltaY);
+            this.isWheeling = false;
+          }
+        }, this.wheelEndDelay);
+      }
+
+      // Detect end of wheel via deltaY
+      // if(this.deltaY > 0 && this.deltaY < 5){
+      //   setTimeout(() => {
+      //     console.log('heyaaa')
+      //     this.handleWheelEnd(this.deltaY)
+      //   }, this.wheelEndDelay)
+      // }else if(this.deltaY < 0 && this.deltaY > -5){
+      //   this.wheelTimeout = setTimeout(() => {
+      //     console.log('heyaaaaaaa3')
+      //     this.handleWheelEnd(this.deltaY)
+      //   }, this.wheelEndDelay)
+      // }
     });
   };
+
+  handleWheelEnd = (delta) => {
+    // if(delta > 0){
+    //   this.nextTrack()
+    // }else{
+    //   this.prevTrack()
+    // }
+    this.targetScrollY = (this.coverSize + this.gap) * this.getClosestTrack()
+  }
+
+  snapSlider = () => {
+    this.targetScrollY = (this.coverSize + this.gap) * this.currentSliderIndex
+  }
+
+  getClosestTrack = () => {
+    const targetTrackIndex = Math.round(this.targetScrollY / (this.coverSize + this.gap));
+    return targetTrackIndex
+  }
 
   setCoversPosition = () => {
     if (this.trackCover.parentNode) {
       this.trackCover.remove();
     }
     this.coversToUpdate.forEach((cover, index) => {
-      let basePosition =
-       index * (this.coverSize + this.gap);
-      let adjustedPosition =  -this.initialValue + (basePosition - this.scrollY) % this.containerSize;
+      let basePosition = index * (this.coverSize + this.gap);
+      let adjustedPosition =
+        -this.initialValue +
+        ((basePosition - this.scrollY) % this.containerSize);
+
       if (adjustedPosition < -this.initialValue) {
         adjustedPosition += this.containerSize;
       }
+
       gsap.to(cover, {
-        top : adjustedPosition,
-        duration : 0,
-        onComplete : function(){
-          
-        }
-      })
-      // cover.style.top = `${adjustedPosition}px`;
+        top: adjustedPosition,
+        duration: 0,
+      });
     });
+  };
+
+  animate = () => {
+    this.lerpFactor = 0.1;
+
+    this.scrollY += (this.targetScrollY - this.scrollY) * this.lerpFactor;
+    this.setCoversPosition();
+    requestAnimationFrame(this.animate);
   };
 }
 
