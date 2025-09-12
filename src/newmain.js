@@ -38,6 +38,23 @@ export default class MusicPlayer {
         album: "Où les garçons grandissent",
         cover: "/covers/ou_les_garcons_grandissent.webp",
         url: "/musics/jewel_usain-bleu_marine.mp3",
+      },{
+        id: 4,
+        title: "On a pris l'habitude",
+        artist: "BEN_plg",
+        featuredArtists: [],
+        album: "Dire je t'aime",
+        cover: "/covers/dire_je_t_aime.webp",
+        url: "/musics/ben_pg-on-a-pris-l-habitude.mp3",
+      },
+      {
+        id: 5,
+        title: "Fast learner",
+        artist: "Mairo",
+        featuredArtists: ['H JeuneCrack'],
+        album: "La solution",
+        cover: "/covers/la_solution.webp",
+        url: "/musics/mairo-fast_learner.mp3",
       },
     ];
 
