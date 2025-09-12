@@ -3,21 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lecteur de Playlist</title>
+    <title>Music Player</title>
     <link rel="stylesheet" href="src/style.css" />
+    <link rel="icon" type="image/x-icon" href="/covers/scope.webp">
   </head>
   <body
     class="bg-amber-100 font-[ClashDisplay-Variable] font-semibold uppercase text-stone-900 h-screen max-h-screen flex items-center"
   >
-    <div class="flex items-center overflow-hidden w-full h-full ">
+    <div class="flex items-center overflow-hidden w-full h-full">
       <!-- Cover display -->
-      <div id="track-covers-container" class="w-1/2 h-screen relative ">
-        <img
-          id="track-cover"
-          class="absolute h-[70vh] aspect-square object-cover z-10 track-cover"
-          src=""
-          alt=""
-        />
+      <div class="w-2/3 h-screen">
+        <div id="track-covers-container" class="h-full relative m-4">
+          <img
+            id="track-cover"
+            class="absolute h-[80vh] aspect-square object-cover z-10 track-cover opacity-75 shadow-md transition-opacity rotate-3"
+            src=""
+            alt=""
+            draggable="false"
+          />
+        </div>
       </div>
 
       <!-- Player -->
@@ -92,6 +96,6 @@
       <ul id="playlist"></ul>
     </div>
 
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/newmain.js"></script>
   </body>
 </html>

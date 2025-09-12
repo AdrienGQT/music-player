@@ -1,5 +1,6 @@
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
+import { Volutus } from "volutus";
 
 gsap.registerPlugin(Draggable);
 
@@ -45,9 +46,11 @@ class MusicPlayer {
     ];
 
     this.currentTrackIndex = 1;
+    this.previousVolutusIndex = null;
+    this.currentVolutusIndex = null;
     this.currentSliderIndex = 0;
 
-    this.gap = 40;
+    // this.gap = 40;
     this.coversToUpdate = [];
     this.audio = new Audio();
     this.isPlaying = false;
@@ -59,12 +62,11 @@ class MusicPlayer {
   init = () => {
     this.cacheDOM();
     this.bindEvents();
-    this.setupDraggable();
     this.setCovers();
     this.loadTrack();
     this.refreshDOM();
-    this.initWheelEventListener();
-    this.animate();
+    this.setVolutus();
+    this.updateMusicPlayer()
   };
 
   cacheDOM = () => {
@@ -102,6 +104,7 @@ class MusicPlayer {
       this.coversToUpdate.push(clone);
       this.trackCoverContainer.appendChild(clone);
     });
+    console.log(this.coversToUpdate);
   };
 
   refreshDOM = () => {
@@ -170,24 +173,22 @@ class MusicPlayer {
   };
 
   nextTrack = () => {
-
     // Update playlist index
     this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length;
-    this.currentSliderIndex +=1
+    this.currentSliderIndex += 1;
 
-    this.snapSlider()
+    // this.snapSlider();
 
     this.playTrack();
   };
 
   prevTrack = () => {
-
     // Update playlist index
     this.currentTrackIndex =
       (this.currentTrackIndex - 1 + this.tracks.length) % this.tracks.length;
-    this.currentSliderIndex -=1
+    this.currentSliderIndex -= 1;
 
-    this.snapSlider()
+    // this.snapSlider();
 
     this.playTrack();
   };
@@ -199,149 +200,178 @@ class MusicPlayer {
     this.refreshDOM();
   };
 
+  setVolutus = () => {
+    this.volutus = new Volutus({
+      direction: "column",
+      container: this.trackCoverContainer,
+      items: this.coversToUpdate,
+      scrollStrength: 0.4,
+      dragStrength: 0.7,
+      snapStrength: 0.02,
+      lerpFactor: 0.5,
+      gap : 64,
+      previousButton : this.prevButton,
+      nextButton : this.nextButton
+    });
+
+    this.previousVolutusIndex = this.volutus.currentItemIndex
+  };
+
+  updateMusicPlayer = () => {
+    this.currentVolutusIndex = this.volutus.currentItemIndex
+    if(this.currentVolutusIndex != this.previousVolutusIndex){
+      const difference = this.volutus.currentItemIndex - this.previousVolutusIndex
+      console.log(difference)
+    }
+    this.previousVolutusIndex = this.currentVolutusIndex
+
+    console.log(this.currentTrackIndex, this.currentSliderIndex)
+    requestAnimationFrame(this.updateMusicPlayer)
+  }
+
   // Infinite slider
-  setupDraggable = () => {
-    const proxy = document.createElement("div");
+  // setupDraggable = () => {
+  //   const proxy = document.createElement("div");
 
-    let lastY = 0;
+  //   let lastY = 0;
 
-    const handleDragRef = this.handleDrag;
-    const handleDragEndRef = this.handleDragEnd;
+  //   const handleDragRef = this.handleDrag;
+  //   const handleDragEndRef = this.handleDragEnd;
 
-    let dragDelta = 0;
-    let currentY = 0;
-    let previousY = 0;
+  //   let dragDelta = 0;
+  //   let currentY = 0;
+  //   let previousY = 0;
 
-    Draggable.create(proxy, {
-      type: "y",
-      inertia: true,
-      trigger: this.trackCoverContainer,
-      onDrag: function () {
-        currentY = this.y;
-        dragDelta = currentY - previousY;
-        handleDragRef(dragDelta);
-        previousY = currentY;
-      },
-      onDragEnd: function (endValue) {
-        let delta = this.endY - this.startY;
-        handleDragEndRef(delta)
-      },
-    });
-  };
+  //   Draggable.create(proxy, {
+  //     type: "y",
+  //     inertia: true,
+  //     trigger: this.trackCoverContainer,
+  //     onDrag: function () {
+  //       currentY = this.y;
+  //       dragDelta = currentY - previousY;
+  //       handleDragRef(dragDelta);
+  //       previousY = currentY;
+  //     },
+  //     onDragEnd: function (endValue) {
+  //       let delta = this.endY - this.startY;
+  //       handleDragEndRef(delta)
+  //     },
+  //   });
+  // };
 
-  handleDrag = (value) => {
-    this.targetScrollY -= value;
-    this.targetScrollY = Math.round(this.targetScrollY);
-    this.setCoversPosition();
-  };
+  // handleDrag = (value) => {
+  //   this.targetScrollY -= value;
+  //   this.targetScrollY = Math.round(this.targetScrollY);
+  //   this.setCoversPosition();
+  // };
 
-  handleDragEnd = (delta) => {
-    if(delta < 0){
-      this.nextTrack()
-    }else{
-      this.prevTrack()
-    }
-  }
+  // handleDragEnd = (delta) => {
+  //   if(delta < 0){
+  //     this.nextTrack()
+  //   }else{
+  //     this.prevTrack()
+  //   }
+  // }
 
-  initWheelEventListener = () => {
-    this.coverSize = this.trackCover.getBoundingClientRect().width;
-    this.containerSize = (this.coverSize + this.gap) * this.tracks.length;
-    this.initialValue = this.coverSize + this.gap;
+  // initWheelEventListener = () => {
+  //   this.coverSize = this.trackCover.getBoundingClientRect().width;
+  //   this.containerSize = (this.coverSize + this.gap) * this.tracks.length;
+  //   this.initialValue = this.coverSize + this.gap;
 
-    this.scrollY = 0;
-    this.targetScrollY = 0;
+  //   this.scrollY = 0;
+  //   this.targetScrollY = 0;
 
-    this.wheelTimeout = null;
-    this.isWheeling = false;
-    this.wheelEndDelay = 250;
+  //   this.wheelTimeout = null;
+  //   this.isWheeling = false;
+  //   this.wheelEndDelay = 250;
 
-    this.setCoversPosition();
+  //   this.setCoversPosition();
 
-    window.addEventListener("wheel", (e) => {
-      this.deltaY = e.deltaY
-      this.wheelDeltaY = e.wheelDeltaY
-      console.log(this.deltaY)
-      this.targetScrollY -= this.wheelDeltaY * 0.3;
-      this.targetScrollY = Math.round(this.targetScrollY);
+  //   window.addEventListener("wheel", (e) => {
+  //     this.deltaY = e.deltaY
+  //     this.wheelDeltaY = e.wheelDeltaY
+  //     console.log(this.deltaY)
+  //     this.targetScrollY -= this.wheelDeltaY * 0.3;
+  //     this.targetScrollY = Math.round(this.targetScrollY);
 
-      this.isWheeling = true;
+  //     this.isWheeling = true;
 
-      if (this.wheelTimeout) {
-        clearTimeout(this.wheelTimeout);
-      }  
+  //     if (this.wheelTimeout) {
+  //       clearTimeout(this.wheelTimeout);
+  //     }
 
-      // Detect if wheeling has ended
-      if ((this.deltaY > 0 && this.deltaY < 5) || (this.deltaY < 0 && this.deltaY > -5)) {
-        console.log('wheel ended')
-        this.wheelTimeout = setTimeout(() => {
-          if (this.isWheeling) {
-            this.handleWheelEnd(this.deltaY);
-            this.isWheeling = false;
-          }
-        }, this.wheelEndDelay);
-      }
+  //     // Detect if wheeling has ended
+  //     if ((this.deltaY > 0 && this.deltaY < 5) || (this.deltaY < 0 && this.deltaY > -5)) {
+  //       console.log('wheel ended')
+  //       this.wheelTimeout = setTimeout(() => {
+  //         if (this.isWheeling) {
+  //           this.handleWheelEnd(this.deltaY);
+  //           this.isWheeling = false;
+  //         }
+  //       }, this.wheelEndDelay);
+  //     }
 
-      // Detect end of wheel via deltaY
-      // if(this.deltaY > 0 && this.deltaY < 5){
-      //   setTimeout(() => {
-      //     console.log('heyaaa')
-      //     this.handleWheelEnd(this.deltaY)
-      //   }, this.wheelEndDelay)
-      // }else if(this.deltaY < 0 && this.deltaY > -5){
-      //   this.wheelTimeout = setTimeout(() => {
-      //     console.log('heyaaaaaaa3')
-      //     this.handleWheelEnd(this.deltaY)
-      //   }, this.wheelEndDelay)
-      // }
-    });
-  };
+  //     // Detect end of wheel via deltaY
+  //     // if(this.deltaY > 0 && this.deltaY < 5){
+  //     //   setTimeout(() => {
+  //     //     console.log('heyaaa')
+  //     //     this.handleWheelEnd(this.deltaY)
+  //     //   }, this.wheelEndDelay)
+  //     // }else if(this.deltaY < 0 && this.deltaY > -5){
+  //     //   this.wheelTimeout = setTimeout(() => {
+  //     //     console.log('heyaaaaaaa3')
+  //     //     this.handleWheelEnd(this.deltaY)
+  //     //   }, this.wheelEndDelay)
+  //     // }
+  //   });
+  // };
 
-  handleWheelEnd = (delta) => {
-    // if(delta > 0){
-    //   this.nextTrack()
-    // }else{
-    //   this.prevTrack()
-    // }
-    this.targetScrollY = (this.coverSize + this.gap) * this.getClosestTrack()
-  }
+  // handleWheelEnd = (delta) => {
+  //   // if(delta > 0){
+  //   //   this.nextTrack()
+  //   // }else{
+  //   //   this.prevTrack()
+  //   // }
+  //   this.targetScrollY = (this.coverSize + this.gap) * this.getClosestTrack()
+  // }
 
-  snapSlider = () => {
-    this.targetScrollY = (this.coverSize + this.gap) * this.currentSliderIndex
-  }
+  // snapSlider = () => {
+  //   this.targetScrollY = (this.coverSize + this.gap) * this.currentSliderIndex
+  // }
 
-  getClosestTrack = () => {
-    const targetTrackIndex = Math.round(this.targetScrollY / (this.coverSize + this.gap));
-    return targetTrackIndex
-  }
+  // getClosestTrack = () => {
+  //   const targetTrackIndex = Math.round(this.targetScrollY / (this.coverSize + this.gap));
+  //   return targetTrackIndex
+  // }
 
-  setCoversPosition = () => {
-    if (this.trackCover.parentNode) {
-      this.trackCover.remove();
-    }
-    this.coversToUpdate.forEach((cover, index) => {
-      let basePosition = index * (this.coverSize + this.gap);
-      let adjustedPosition =
-        -this.initialValue +
-        ((basePosition - this.scrollY) % this.containerSize);
+  // setCoversPosition = () => {
+  //   if (this.trackCover.parentNode) {
+  //     this.trackCover.remove();
+  //   }
+  //   this.coversToUpdate.forEach((cover, index) => {
+  //     let basePosition = index * (this.coverSize + this.gap);
+  //     let adjustedPosition =
+  //       -this.initialValue +
+  //       ((basePosition - this.scrollY) % this.containerSize);
 
-      if (adjustedPosition < -this.initialValue) {
-        adjustedPosition += this.containerSize;
-      }
+  //     if (adjustedPosition < -this.initialValue) {
+  //       adjustedPosition += this.containerSize;
+  //     }
 
-      gsap.to(cover, {
-        top: adjustedPosition,
-        duration: 0,
-      });
-    });
-  };
+  //     gsap.to(cover, {
+  //       top: adjustedPosition,
+  //       duration: 0,
+  //     });
+  //   });
+  // };
 
-  animate = () => {
-    this.lerpFactor = 0.1;
+  // animate = () => {
+  //   this.lerpFactor = 0.1;
 
-    this.scrollY += (this.targetScrollY - this.scrollY) * this.lerpFactor;
-    this.setCoversPosition();
-    requestAnimationFrame(this.animate);
-  };
+  //   this.scrollY += (this.targetScrollY - this.scrollY) * this.lerpFactor;
+  //   this.setCoversPosition();
+  //   requestAnimationFrame(this.animate);
+  // };
 }
 
 new MusicPlayer();

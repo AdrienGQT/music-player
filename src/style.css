@@ -8,6 +8,11 @@
   font-style: normal;
 }
 
+.volutusContainer{
+  overflow: visible !important;
+  display: flex;
+  justify-content: center;
+}
 
 @import "tailwindcss";
 
