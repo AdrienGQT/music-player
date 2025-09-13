@@ -1,4 +1,5 @@
 import { Volutus } from "volutus";
+import { gsap } from "gsap";
 
 export default class MusicPlayer {
   constructor() {
@@ -11,6 +12,8 @@ export default class MusicPlayer {
         album: "Scope",
         cover: "/covers/scope.webp",
         url: "/musics/keroue-la_clim.mp3",
+        color1: "#ede3e2",
+        color2: "#2f3c66",
       },
       {
         id: 1,
@@ -20,6 +23,8 @@ export default class MusicPlayer {
         album: "L'HERMITE",
         cover: "/covers/l_hermite.webp",
         url: "/musics/ajna-outro_yuu.mp3",
+        color1: "#3f7c98",
+        color2: "#bf5c3a",
       },
       {
         id: 2,
@@ -29,6 +34,8 @@ export default class MusicPlayer {
         album: "LA FIEV",
         cover: "/covers/la_fiev.webp",
         url: "/musics/mairo-blccd_tears.mp3",
+        color1: "#ccc4c9",
+        color2: "#362325",
       },
       {
         id: 3,
@@ -38,7 +45,10 @@ export default class MusicPlayer {
         album: "Où les garçons grandissent",
         cover: "/covers/ou_les_garcons_grandissent.webp",
         url: "/musics/jewel_usain-bleu_marine.mp3",
-      },{
+        color1: "#bc5c0e",
+        color2: "#304647",
+      },
+      {
         id: 4,
         title: "On a pris l'habitude",
         artist: "BEN_plg",
@@ -46,15 +56,19 @@ export default class MusicPlayer {
         album: "Dire je t'aime",
         cover: "/covers/dire_je_t_aime.webp",
         url: "/musics/ben_pg-on-a-pris-l-habitude.mp3",
+        color1: "#cb9778",
+        color2: "#3d241a",
       },
       {
         id: 5,
         title: "Fast learner",
         artist: "Mairo",
-        featuredArtists: ['H JeuneCrack'],
+        featuredArtists: ["H JeuneCrack"],
         album: "La solution",
         cover: "/covers/la_solution.webp",
         url: "/musics/mairo-fast_learner.mp3",
+        color1: "#d2eaf4",
+        color2: "#12283d",
       },
     ];
 
@@ -71,14 +85,18 @@ export default class MusicPlayer {
     this.setPlayButton();
     this.setVolutus();
     this.refreshDOM();
+    this.setBackground();
     this.loadTrack();
     this.setAudioProperties();
     this.setLastIndex();
-    this.refreshStyle()
+    this.setGsapAnimations();
+    this.refreshStyle();
     this.updateMusicPlayer();
   };
 
   cacheDOM = () => {
+    this.body = document.querySelector('body')
+
     this.playButton = document.querySelector("#play");
     this.playSVG = document.querySelector("#playSVG");
     this.pauseSVG = document.querySelector("#pauseSVG");
@@ -197,7 +215,8 @@ export default class MusicPlayer {
     const currentIndex = this.volutus.currentItemIndex;
     if (this.lastIndex != currentIndex) {
       this.playTrack();
-      this.refreshStyle()
+      this.refreshStyle();
+      this.setBackground()
     }
     this.lastIndex = currentIndex;
   };
@@ -211,25 +230,54 @@ export default class MusicPlayer {
     requestAnimationFrame(this.updateMusicPlayer);
   };
 
+  setGsapAnimations = () => {
+    const buttons = [this.nextButton, this.prevButton, this.playButton];
+    buttons.forEach((item) => {
+      const svg = item.querySelectorAll("svg");
+      svg.forEach(() => {
+        const tl = gsap.timeline({ paused: true });
+        tl.to(svg, { duration: 0.2, yPercent: -110, ease: "power1.in" });
+        tl.set(svg, { yPercent: 110 });
+        tl.to(svg, { duration: 0.2, yPercent: 0 });
+
+        item.addEventListener("mouseenter", () => {
+          if(!tl.isActive()){
+            tl.play(0);
+          }
+        });
+      });
+    });
+  };
+
+  setBackground = () => {
+    const color = this.tracks[this.volutus.currentItemIndex].color1
+    gsap.to(this.body, {
+      delay : 0.2,
+      duration: 5,
+      backgroundColor : color,
+      ease : "power1.out",
+    })
+  }
+
   refreshStyle = () => {
     const currentIndex = this.volutus.currentItemIndex;
     const previousIndex = this.volutus.previousItemIndex;
     const nextIndex = this.volutus.nextItemIndex;
 
-    this.coversToUpdate[currentIndex].classList.add('shadow-2xl')
-    this.coversToUpdate[previousIndex].classList.remove('shadow-2xl')
-    this.coversToUpdate[nextIndex].classList.remove('shadow-2xl')
-    this.coversToUpdate[currentIndex].classList.remove('shadow-md')
-    this.coversToUpdate[previousIndex].classList.add('shadow-md')
-    this.coversToUpdate[nextIndex].classList.add('shadow-md')
+    this.coversToUpdate[currentIndex].classList.add("shadow-2xl");
+    this.coversToUpdate[previousIndex].classList.remove("shadow-2xl");
+    this.coversToUpdate[nextIndex].classList.remove("shadow-2xl");
+    this.coversToUpdate[currentIndex].classList.remove("shadow-md");
+    this.coversToUpdate[previousIndex].classList.add("shadow-md");
+    this.coversToUpdate[nextIndex].classList.add("shadow-md");
 
-    this.coversToUpdate[currentIndex].classList.add('opacity-100')
-    this.coversToUpdate[previousIndex].classList.remove('opacity-100')
-    this.coversToUpdate[nextIndex].classList.remove('opacity-100')
-    this.coversToUpdate[currentIndex].classList.remove('opacity-75')
-    this.coversToUpdate[previousIndex].classList.add('opacity-75')
-    this.coversToUpdate[nextIndex].classList.add('opacity-75')
-  }
+    this.coversToUpdate[currentIndex].classList.add("opacity-100");
+    this.coversToUpdate[previousIndex].classList.remove("opacity-100");
+    this.coversToUpdate[nextIndex].classList.remove("opacity-100");
+    this.coversToUpdate[currentIndex].classList.remove("opacity-75");
+    this.coversToUpdate[previousIndex].classList.add("opacity-75");
+    this.coversToUpdate[nextIndex].classList.add("opacity-75");
+  };
 }
 
 new MusicPlayer();
