@@ -1,5 +1,9 @@
 import { Volutus } from "volutus";
 import { gsap } from "gsap";
+    
+import { SplitText } from "gsap/SplitText";
+
+gsap.registerPlugin(SplitText);
 
 export default class MusicPlayer {
   constructor() {
@@ -140,7 +144,7 @@ export default class MusicPlayer {
     });
   };
 
-  refreshDOM = () => {
+  refreshDOMOld = () => {
     const sliderIndex = this.volutus.currentItemIndex;
     this.trackTitle.textContent = this.tracks[sliderIndex].title;
     this.trackAlbum.textContent = this.tracks[sliderIndex].album;
@@ -165,6 +169,45 @@ export default class MusicPlayer {
     }
     this.togglePlayButton();
   };
+
+  refreshDOM = () => {
+    const sliderIndex = this.volutus.currentItemIndex;
+    const currentTrack = this.tracks[sliderIndex];
+
+    const textElements = [
+      {el: this.trackTitle, text: currentTrack.title},
+      {el: this.trackAlbum, text: currentTrack.album},
+      {el: this.trackArtist, text: currentTrack.artist},
+      {el: this.trackFeat, text: currentTrack.featuredArtists.length > 0 
+        ? "ft. " + currentTrack.featuredArtists.join(', ')
+        : " "
+      }
+    ]
+
+    textElements.forEach(({el, text}) => {
+      if(!el) return;
+
+      let oldSplit = new SplitText(el, {type: "chars, words"});
+      gsap.to(oldSplit.chars, {
+        opacity : 0,
+        duration : 0.05,
+        stagger : 0.06,
+        onComplete: () => {
+          oldSplit.revert();
+
+          el.textContent = text;
+
+          let newSplit = new SplitText(el, {type: "chars, words"});
+          gsap.from(newSplit.chars, {
+            opacity : 0,
+            duration : 0.05,
+            stagger : 0.04
+          })
+        }
+      })
+    })
+    this.togglePlayButton();
+  }
 
   togglePlayButton = () => {
     if (this.isPlaying) {
@@ -225,11 +268,6 @@ export default class MusicPlayer {
     this.lastIndex = this.volutus.currentItemIndex;
   };
 
-  updateMusicPlayer = () => {
-    this.checkIndex();
-    requestAnimationFrame(this.updateMusicPlayer);
-  };
-
   setGsapAnimations = () => {
     const buttons = [this.nextButton, this.prevButton, this.playButton];
     buttons.forEach((item) => {
@@ -253,7 +291,7 @@ export default class MusicPlayer {
     const color = this.tracks[this.volutus.currentItemIndex].color1
     gsap.to(this.body, {
       delay : 0.2,
-      duration: 5,
+      duration: 3,
       backgroundColor : color,
       ease : "power1.out",
     })
@@ -278,6 +316,16 @@ export default class MusicPlayer {
     this.coversToUpdate[previousIndex].classList.add("opacity-75");
     this.coversToUpdate[nextIndex].classList.add("opacity-75");
   };
+
+  updateMusicPlayer = () => {
+    this.checkIndex();
+    requestAnimationFrame(this.updateMusicPlayer);
+  };
 }
 
-new MusicPlayer();
+document.addEventListener('DOMContentLoaded', () => {
+  document.fonts.ready.then(() => {
+    new MusicPlayer();
+  })
+})
+
