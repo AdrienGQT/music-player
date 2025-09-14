@@ -259,10 +259,19 @@ export default class MusicPlayer {
   };
 
   playTrack = () => {
-    this.loadTrack();
-    this.audio.play();
-    this.isPlaying = true;
-    this.refreshDOM();
+    gsap.to(this.audio, {
+      volume: 0,
+      duration: 0.3,
+      onComplete: () => {
+        this.loadTrack();
+        this.audio.volume = 1
+        setTimeout(() => {
+          this.audio.play();
+          this.isPlaying = true;
+        }, 500);
+        this.refreshDOM();
+      },
+    });
   };
 
   setAudioProperties = () => {
