@@ -1,6 +1,6 @@
 import { Volutus } from "volutus";
 import { gsap } from "gsap";
-    
+
 import { SplitText } from "gsap/SplitText";
 
 gsap.registerPlugin(SplitText);
@@ -80,10 +80,13 @@ export default class MusicPlayer {
     this.audio = new Audio();
     this.lastIndex = null;
 
+    this.sizes = {};
+
     this.init();
   }
 
   init = () => {
+    this.getSizes();
     this.cacheDOM();
     this.setCovers();
     this.setPlayButton();
@@ -98,8 +101,15 @@ export default class MusicPlayer {
     this.updateMusicPlayer();
   };
 
+  getSizes = () => {
+    this.sizes = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+  };
+
   cacheDOM = () => {
-    this.body = document.querySelector('body')
+    this.body = document.querySelector("body");
 
     this.playButton = document.querySelector("#play");
     this.playSVG = document.querySelector("#playSVG");
@@ -134,8 +144,12 @@ export default class MusicPlayer {
   };
 
   setVolutus = () => {
+    let direction = null;
+
+    this.sizes.width > 768 ? (direction = "column") : (direction = "row");
+
     this.volutus = new Volutus({
-      direction: "column",
+      direction: direction,
       container: this.trackCoverContainer,
       items: this.coversToUpdate,
       gap: 12,
@@ -175,39 +189,42 @@ export default class MusicPlayer {
     const currentTrack = this.tracks[sliderIndex];
 
     const textElements = [
-      {el: this.trackTitle, text: currentTrack.title},
-      {el: this.trackAlbum, text: currentTrack.album},
-      {el: this.trackArtist, text: currentTrack.artist},
-      {el: this.trackFeat, text: currentTrack.featuredArtists.length > 0 
-        ? "ft. " + currentTrack.featuredArtists.join(', ')
-        : " "
-      }
-    ]
+      { el: this.trackTitle, text: currentTrack.title },
+      { el: this.trackAlbum, text: currentTrack.album },
+      { el: this.trackArtist, text: currentTrack.artist },
+      {
+        el: this.trackFeat,
+        text:
+          currentTrack.featuredArtists.length > 0
+            ? "ft. " + currentTrack.featuredArtists.join(", ")
+            : " ",
+      },
+    ];
 
-    textElements.forEach(({el, text}) => {
-      if(!el) return;
+    textElements.forEach(({ el, text }) => {
+      if (!el) return;
 
-      let oldSplit = new SplitText(el, {type: "chars, words"});
+      let oldSplit = new SplitText(el, { type: "chars, words" });
       gsap.to(oldSplit.chars, {
-        opacity : 0,
-        duration : 0.05,
-        stagger : 0.06,
+        opacity: 0,
+        duration: 0.05,
+        stagger: 0.06,
         onComplete: () => {
           oldSplit.revert();
 
           el.textContent = text;
 
-          let newSplit = new SplitText(el, {type: "chars, words"});
+          let newSplit = new SplitText(el, { type: "chars, words" });
           gsap.from(newSplit.chars, {
-            opacity : 0,
-            duration : 0.05,
-            stagger : 0.04
-          })
-        }
-      })
-    })
+            opacity: 0,
+            duration: 0.05,
+            stagger: 0.04,
+          });
+        },
+      });
+    });
     this.togglePlayButton();
-  }
+  };
 
   togglePlayButton = () => {
     if (this.isPlaying) {
@@ -259,7 +276,7 @@ export default class MusicPlayer {
     if (this.lastIndex != currentIndex) {
       this.playTrack();
       this.refreshStyle();
-      this.setBackground()
+      this.setBackground();
     }
     this.lastIndex = currentIndex;
   };
@@ -279,7 +296,7 @@ export default class MusicPlayer {
         tl.to(svg, { duration: 0.2, yPercent: 0 });
 
         item.addEventListener("mouseenter", () => {
-          if(!tl.isActive()){
+          if (!tl.isActive()) {
             tl.play(0);
           }
         });
@@ -288,14 +305,14 @@ export default class MusicPlayer {
   };
 
   setBackground = () => {
-    const color = this.tracks[this.volutus.currentItemIndex].color1
+    const color = this.tracks[this.volutus.currentItemIndex].color1;
     gsap.to(this.body, {
-      delay : 0.2,
+      delay: 0.2,
       duration: 3,
-      backgroundColor : color,
-      ease : "power1.out",
-    })
-  }
+      backgroundColor: color,
+      ease: "power1.out",
+    });
+  };
 
   refreshStyle = () => {
     const currentIndex = this.volutus.currentItemIndex;
@@ -323,9 +340,8 @@ export default class MusicPlayer {
   };
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   document.fonts.ready.then(() => {
     new MusicPlayer();
-  })
-})
-
+  });
+});

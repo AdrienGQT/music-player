@@ -8,15 +8,15 @@
     <link rel="icon" type="image/x-icon" href="/covers/scope.webp">
   </head>
   <body
-    class="font-[ClashDisplay-Variable] font-semibold uppercase text-stone-900 h-screen max-h-screen flex items-center"
+    class="font-[ClashDisplay-Variable] font-semibold uppercase text-stone-900 h-screen max-h-screen flex md:items-center items-start"
   >
-    <div class="flex items-center overflow-hidden w-full h-full">
+    <div class="flex flex-col items-center md:justify-start md:h-full justify-end overflow-hidden w-full h-[80vh] md:flex-row">
       <!-- Cover display -->
-      <div class="w-2/3 h-screen">
-        <div id="track-covers-container" class="h-full relative m-4">
+      <div class="md:w-2/3 md:h-screen w-screen h-full md:inline flex flex-col justify-center">
+        <div id="track-covers-container" class="md:flex md:flex-row flex-col h-[80vw] md:justify-center md:h-full md:w-auto relative md:p-4">
           <img
             id="track-cover"
-            class="absolute h-[80vh] aspect-square object-cover z-10 track-cover opacity-75 shadow-md rotate-3"
+            class="absolute md:h-[80vh] md:w-auto w-[80vw] h-auto aspect-square object-cover z-10 track-cover opacity-75 shadow-md md:rotate-3"
             src=""
             alt=""
             draggable="false"
@@ -25,7 +25,7 @@
       </div>
 
       <!-- Player -->
-      <div class="flex flex-col">
+      <div class="flex flex-col md:w-fit w-full p-4">
         <div class="flex flex-col">
           <h4 id="track-album" class="text-xl font-medium">Titre de l'album</h4>
           <h3 id="track-title" class="text-5xl font-bold">Titre du morceau</h3>
@@ -39,7 +39,7 @@
           </div>
         </div>
 
-        <div class="flex gap-16">
+        <div class="flex gap-16 md:justify-start justify-center">
           <button id="prev" class="cursor-pointer overflow-hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"

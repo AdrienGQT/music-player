@@ -19,8 +19,8 @@ body{
 
 .volutusContainer{
   overflow: visible !important;
-  display: flex;
-  justify-content: center;
+  /* display: flex; */
+  /* justify-content: center; */
 }
 
 .volutusItem{
